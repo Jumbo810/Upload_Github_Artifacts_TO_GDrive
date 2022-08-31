@@ -12,7 +12,7 @@ var DT = date+'_'+time;
 
 const credentials = actions.getInput('credentials', { required: true });
 const parentFolderId = actions.getInput('parent_folder_id', { required: true });
-const target = actions.getInput('target', { required: true }) + "DT";
+const target = actions.getInput('target', { required: true })+"DT";
 const owner = actions.getInput('owner', { required: false });
 const childFolder = actions.getInput('child_folder', { required: false });
 let filename = actions.getInput('name', { required: false });
