@@ -4,11 +4,6 @@ const fs = require('fs');
 const actions = require('@actions/core');
 const { google } = require('googleapis');
 
-const today = new Date();
-// const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-// const time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
-// const DT = date + '_' + time;
-
 const credentials = actions.getInput('credentials', { required: true });
 const parentFolderId = actions.getInput('parent_folder_id', { required: true });
 const target = actions.getInput('target', { required: true });
@@ -64,11 +59,11 @@ async function main() {
     }
 
     const fileMetadata = {
-        name: today.getHours(),
+        name: filename,
         parents: [uploadFolderId],
     };
     const fileData = {
-        body: fs.createReadStream(today.getHours()),
+        body: fs.createReadStream(target),
     };
 
     return drive.files.create({
