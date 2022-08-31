@@ -8,7 +8,7 @@ steps:
     - uses: actions/checkout@v2
 
     - name: Upload a file to Google Drive
-      uses: Upload_Github_Artifacts_TO_GDrive@master
+      uses: Upload_Github_Artifacts_TO_GDrive@1.0
       with:
         target: <LOCAL_PATH_TO_YOUR_FILE>
         credentials: ${{ secrets.<YOUR_SERVICE_ACCOUNT_CREDENTIALS> }}

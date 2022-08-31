@@ -1,9 +1,9 @@
 {
   "name": "Upload_Github_Artifacts_TO_GDrive",
-  "version": "1.1.0",
+  "version": "1.0",
   "description": "Github Action To Upload Artifacts to Google Drive using a service account",
   "main": "index.js",
-  "author": "@Jumbo810",
+  "author": "Twiter.com@Jumbo810",
   "repository": "git@github.com:Jumbo810/Upload_Github_Artifacts_TO_GDrive.git",
   "license": "MIT",
   "private": true,
@@ -15,7 +15,7 @@
     "@types/node": "^12.20.4",
     "@vercel/ncc": "^0.27.0",
     "eslint": "^7.20.0",
-    "eslint-config-wilso-base": "^1.3.3"
+    "eslint-config-willo-base": "^1.3.3"
   },
   "dependencies": {
     "@actions/core": "^1.2.6",

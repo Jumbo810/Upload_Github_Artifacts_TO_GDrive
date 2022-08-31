@@ -1,5 +1,5 @@
 module.exports = {
     extends: [
-        'eslint-config-wilso-base',
+        'eslint-config-willo-base',
     ],
 };
