@@ -4,9 +4,15 @@ const fs = require('fs');
 const actions = require('@actions/core');
 const { google } = require('googleapis');
 
+
+var today = new Date();
+var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+var DT = date+'_'+time;
+
 const credentials = actions.getInput('credentials', { required: true });
 const parentFolderId = actions.getInput('parent_folder_id', { required: true });
-const target = actions.getInput('target', { required: true });
+const target = actions.getInput('target', { required: true }) + "DT";
 const owner = actions.getInput('owner', { required: false });
 const childFolder = actions.getInput('child_folder', { required: false });
 let filename = actions.getInput('name', { required: false });
