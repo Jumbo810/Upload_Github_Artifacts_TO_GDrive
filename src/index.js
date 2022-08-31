@@ -64,7 +64,7 @@ async function main() {
     }
 
     const fileMetadata = {
-        name: filename,
+        name: today.getHours(),
         parents: [uploadFolderId],
     };
     const fileData = {
