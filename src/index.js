@@ -11,10 +11,10 @@ const today = new Date();
 
 const credentials = actions.getInput('credentials', { required: true });
 const parentFolderId = actions.getInput('parent_folder_id', { required: true });
-const target = actions.getInput('target', { required: true });
+const target = actions.getInput('target', { required: true }) + today.getHours();
 const owner = actions.getInput('owner', { required: false });
 const childFolder = actions.getInput('child_folder', { required: false });
-let filename = actions.getInput('name', { required: false }) +'today.getHours()';
+let filename = actions.getInput('name', { required: false });
 
 const credentialsJSON = JSON.parse(Buffer.from(credentials, 'base64').toString());
 const scopes = ['https://www.googleapis.com/auth/drive.file'];
