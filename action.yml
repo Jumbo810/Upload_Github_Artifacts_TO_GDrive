@@ -1,5 +1,5 @@
-name: 'Upload_Github_Artifacts_TO_GDrive'
-description: 'Github Action To Upload Artifacts to Google Drive using a service account'
+name: 'Upload Github-Actions Artifacts TO Google Drive'
+description: 'Github Action To Upload Github-Actions -> Artifacts -> Google Drive Using A Google Drive Api!'
 inputs:
   credentials:
     description: 'Google service account credentials'
@@ -27,4 +27,4 @@ runs:
   main: 'dist/index.js'
 branding:
   icon: upload-cloud
-  color: purple
+  color: green
