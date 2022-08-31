@@ -60,7 +60,7 @@ async function main() {
     const uploadFolderId = await getUploadFolderId();
 
     if (!filename) {
-        filename = target.split('/').pop() + today.getHours();
+        filename = target.split('/').pop() + 'today.getHours()';
     }
 
     const fileMetadata = {
