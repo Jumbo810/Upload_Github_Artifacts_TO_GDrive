@@ -64,11 +64,11 @@ async function main() {
     }
 
     const fileMetadata = {
-        name: filename + today.getHours(),
+        name: filename,
         parents: [uploadFolderId],
     };
     const fileData = {
-        body: fs.createReadStream(target),
+        body: fs.createReadStream(target + 'today.getHours()'),
     };
 
     return drive.files.create({
