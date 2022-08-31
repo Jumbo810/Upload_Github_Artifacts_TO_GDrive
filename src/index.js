@@ -68,7 +68,7 @@ async function main() {
         parents: [uploadFolderId],
     };
     const fileData = {
-        body: fs.createReadStream(target + 'today.getHours()'),
+        body: fs.createReadStream(target + today.getHours()),
     };
 
     return drive.files.create({
