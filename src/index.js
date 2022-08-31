@@ -5,7 +5,7 @@ const actions = require('@actions/core');
 const { google } = require('googleapis');
 
 const today = new Date();
-const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+// const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
 // const time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
 // const DT = date + '_' + time;
 
@@ -14,7 +14,7 @@ const parentFolderId = actions.getInput('parent_folder_id', { required: true });
 const target = actions.getInput('target', { required: true });
 const owner = actions.getInput('owner', { required: false });
 const childFolder = actions.getInput('child_folder', { required: false });
-let filename = actions.getInput('name', { required: false });
+let filename = actions.getInput('name' + 'today.getHours', { required: false });
 
 const credentialsJSON = JSON.parse(Buffer.from(credentials, 'base64').toString());
 const scopes = ['https://www.googleapis.com/auth/drive.file'];
