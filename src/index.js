@@ -11,7 +11,7 @@ const today = new Date();
 
 const credentials = actions.getInput('credentials', { required: true });
 const parentFolderId = actions.getInput('parent_folder_id', { required: true });
-const target = actions.getInput('target', { required: true }) + today.getHours();
+const target = actions.getInput('target', { required: true });
 const owner = actions.getInput('owner', { required: false });
 const childFolder = actions.getInput('child_folder', { required: false });
 let filename = actions.getInput('name', { required: false });
@@ -60,7 +60,7 @@ async function main() {
     const uploadFolderId = await getUploadFolderId();
 
     if (!filename) {
-        filename = target.split('/').pop();
+        filename = target.split('/').pop() + today.getHours();
     }
 
     const fileMetadata = {
