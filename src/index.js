@@ -4,9 +4,8 @@ const fs = require('fs');
 const actions = require('@actions/core');
 const { google } = require('googleapis');
 
-
 const today = new Date();
-// const date = today.getFullYear() + '-' + (today.getMonth() +1) + '-' + today.getDate();
+const date = today.getFullYear() + '-' + (today.getMonth() +1) + '-' + today.getDate();
 // const time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
 // const DT = date + '_' + time;
 
