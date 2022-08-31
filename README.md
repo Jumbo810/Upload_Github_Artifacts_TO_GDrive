@@ -1,5 +1,5 @@
-# Upload_Github_Artifacts_TO_GDrive
-Github Action To Upload Artifacts to Google Drive using a service account.
+# Upload Github Artifacts TO GDrive
+Github Action To Upload Artifacts to Google Drive Using A Google Drive Api.
 
 ## Usage
 #### Simple example:
