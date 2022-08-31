@@ -7,8 +7,8 @@ Github Action To Upload Artifacts to Google Drive Using A Google Drive Api.
 steps:
     - uses: actions/checkout@v2
 
-    - name: Upload a file to Google Drive
-      uses: Upload_Github_Artifacts_TO_GDrive@1.0
+    - name: Upload Artifacts TO Google Drive
+      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v1.1.1
       with:
         target: <LOCAL_PATH_TO_YOUR_FILE>
         credentials: ${{ secrets.<YOUR_SERVICE_ACCOUNT_CREDENTIALS> }}
