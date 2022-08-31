@@ -5,10 +5,10 @@ const actions = require('@actions/core');
 const { google } = require('googleapis');
 
 
-let today = new Date();
-let date = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
-let time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
-// let DT = date +'_'+ time;
+const today = new Date();
+// const date = today.getFullYear() + '-' + (today.getMonth() +1) + '-' + today.getDate();
+// const time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
+// const DT = date + '_' + time;
 
 const credentials = actions.getInput('credentials', { required: true });
 const parentFolderId = actions.getInput('parent_folder_id', { required: true });
