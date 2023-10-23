@@ -9,6 +9,7 @@ const parentFolderId = actions.getInput('parent_folder_id', { required: true });
 const target = actions.getInput('target', { required: true });
 const owner = actions.getInput('owner', { required: false });
 const childFolder = actions.getInput('child_folder', { required: false });
+const override = actions.getBooleanInput('override', { required: false });
 let filename = actions.getInput('name', { required: false });
 
 const credentialsJSON = JSON.parse(Buffer.from(credentials, 'base64').toString());
@@ -65,6 +66,23 @@ async function main() {
     const fileData = {
         body: fs.createReadStream(target),
     };
+
+    if (override) {
+        const res = await drive.files.list({
+            q: `'${uploadFolderId}' in parents`,
+            fields: 'nextPageToken, files(id, name)',
+        });
+
+        const { files } = res.data;
+
+        files.forEach((file) => {
+            if (file.name === filename) {
+                const fileId = file.id;
+
+                drive.files.delete({ fileId });
+            }
+        });
+    }
 
     return drive.files.create({
         resource: fileMetadata,

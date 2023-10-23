@@ -22,6 +22,11 @@ inputs:
     description: 'Optional sub-folder to upload the file to (Will be created if non-existent)'
     required: false
     default: null
+  override:
+    description: 'Optional, if set true, delete files with the same name before uploading'
+    required: false
+    default: false
+    type: boolean
 runs:
   using: 'node12'
   main: 'dist/index.js'

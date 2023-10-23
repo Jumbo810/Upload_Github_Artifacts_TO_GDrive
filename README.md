@@ -47,3 +47,7 @@ A sub-folder where to upload your file. It will be created if non-existent and m
 
 #### `owner` (Optional):
 The email address of a user account that has access to the drive folder and will get the ownership of the file after its creation. To use this feature you must grant your service account a [domain-wide delegation of authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) beforehand.
+
+
+#### `override` (Optional):
+If set true, delete files with the same name before uploading.
