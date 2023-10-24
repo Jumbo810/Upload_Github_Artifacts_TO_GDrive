@@ -8,7 +8,7 @@ steps:
     - uses: actions/checkout@v2
 
     - name: Upload Artifacts TO Google Drive
-      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v1.1.1
+      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.2.2
       with:
         target: <LOCAL_PATH_TO_YOUR_FILE>
         credentials: ${{ secrets.<YOUR_SERVICE_ACCOUNT_CREDENTIALS> }}
