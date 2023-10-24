@@ -28,7 +28,7 @@ inputs:
     default: false
     type: boolean
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
 branding:
   icon: upload-cloud
