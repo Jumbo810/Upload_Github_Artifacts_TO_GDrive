@@ -7,6 +7,13 @@ const { Glob } = require('glob');
 const { google } = require('googleapis');
 
 /**
+ * Global static reference to the Google Drive API
+ *
+ * @type {import('googleapis').drive_v3.Drive}
+ */
+let DRIVE;
+
+/**
  * Get input value and log value to debug
  *
  * @param {string} name
@@ -33,8 +40,6 @@ function getBooleanInputAndDebug(name, options) {
     actions.debug(`${name}: ${val}`);
     return val;
 }
-
-let drive;
 
 /**
  * Splits off the top level folder and returns a tuple of [head, rest]
@@ -64,26 +69,26 @@ function splitFolder(folder) {
  * Return the id of the child folder and create the directories if they are missing
  *
  * @param {string} parentFolderId Id of the parent directory
- * @param {string | null} childFolder
+ * @param {string | null} childFolderPath
  * @returns {string}
  */
-async function getUploadFolderId(parentFolderId, childFolder) {
+async function getUploadFolderId(parentFolderId, childFolderPath) {
     actions.debug(`parentFolderId: ${parentFolderId}`);
-    actions.debug(`childFolder: ${childFolder}`);
-    if (!childFolder) {
+    actions.debug(`childFolderPath: ${childFolderPath}`);
+    if (!childFolderPath) {
         // Empty or null: return parent id
         return parentFolderId;
     }
 
-    const [currentFolder, currentChild] = splitFolder(childFolder);
+    const [currentFolder, remainingFolderPath] = splitFolder(childFolderPath);
 
     actions.debug(`currentFolder: ${currentFolder}`);
-    actions.debug(`currentChild: ${currentChild}`);
+    actions.debug(`remainingFolderPath: ${remainingFolderPath}`);
 
     // Check if child folder already exists and is unique
     const {
         data: { files },
-    } = await drive.files.list({
+    } = await DRIVE.files.list({
         q: `name='${currentFolder}' and '${parentFolderId}' in parents and trashed=false`,
         fields: 'files(id)',
         includeItemsFromAllDrives: true,
@@ -96,11 +101,12 @@ async function getUploadFolderId(parentFolderId, childFolder) {
         throw new Error('More than one entry match the child folder name');
     }
     if (files.length === 1) {
+        actions.debug(`${currentFolder} exists inside ${parentFolderId}`);
         // Folder exists, check that folders children
-        return getUploadFolderId(files[0].id, currentChild);
+        return getUploadFolderId(files[0].id, remainingFolderPath);
     }
 
-    actions.debug(`${currentFolder} does not exist`);
+    actions.debug(`${currentFolder} does not exist inside ${parentFolderId}`);
 
     const currentFolderMetadata = {
         name: currentFolder,
@@ -109,7 +115,7 @@ async function getUploadFolderId(parentFolderId, childFolder) {
     };
     const {
         data: { id: currentFolderId },
-    } = await drive.files.create({
+    } = await DRIVE.files.create({
         requestBody: currentFolderMetadata,
         fields: 'id',
         supportsAllDrives: true,
@@ -117,7 +123,7 @@ async function getUploadFolderId(parentFolderId, childFolder) {
 
     actions.debug(`${currentFolder} id: ${currentFolderId}`);
 
-    return getUploadFolderId(currentFolderId, currentChild);
+    return getUploadFolderId(currentFolderId, remainingFolderPath);
 }
 
 /**
@@ -146,23 +152,23 @@ async function uploadFile(fileName, filePath, override, uploadFolderId) {
     };
 
     if (override) {
-        const { files } = await drive.files.list({
+        const { files } = await DRIVE.files.list({
             q: `'${uploadFolderId}' in parents`,
             fields: 'nextPageToken, files(id, name)',
         });
 
-        files.forEach((file) => {
+        for (const file in files) {
             if (file.name === fileName) {
                 const fileId = file.id;
 
                 actions.debug(`Removing ${file.name}(${file.id})`);
 
-                drive.files.delete({ fileId });
+                await DRIVE.files.delete({ fileId });
             }
-        });
+        }
     }
 
-    return drive.files.create({
+    return DRIVE.files.create({
         requestBody: fileMetadata,
         media: fileData,
         uploadType: 'multipart',
@@ -172,6 +178,7 @@ async function uploadFile(fileName, filePath, override, uploadFolderId) {
 }
 
 async function main() {
+    // Get configuration input
     const credentials = getInputAndDebug('credentials', { required: true });
     const parentFolderId = getInputAndDebug('parent_folder_id', { required: true });
     const target = getInputAndDebug('target', { required: true });
@@ -180,6 +187,7 @@ async function main() {
     const override = getBooleanInputAndDebug('override', { required: false });
     const filename = getInputAndDebug('name', { required: false });
 
+    // Authenticate with Google
     const credentialsJSON = JSON.parse(
         Buffer.from(credentials, 'base64').toString(),
     );
@@ -195,7 +203,8 @@ async function main() {
         owner,
     );
 
-    drive = google.drive({ version: 'v3', auth });
+    // Set global `drive`
+    DRIVE = google.drive({ version: 'v3', auth });
 
     console.log('Getting folder id...');
     const uploadFolderId = await getUploadFolderId(parentFolderId, childFolder);
