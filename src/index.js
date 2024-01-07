@@ -184,7 +184,7 @@ async function uploadFile(fileName, filePath, override, uploadFolderId) {
 
 async function main() {
     // Get configuration input
-    const credentials = getInputAndDebug('credentials', { required: true });
+    const credentials = actions.getInput('credentials', { required: true });
     const parentFolderId = getInputAndDebug('parent_folder_id', { required: true });
     const target = getInputAndDebug('target', { required: true });
     const owner = getInputAndDebug('owner', { required: false });
