@@ -70,7 +70,7 @@ function splitFolder(folder) {
  *
  * @param {string} parentFolderId Id of the parent directory
  * @param {string | null} childFolderPath
- * @returns {string}
+ * @returns {Promise<string>}
  */
 async function getUploadFolderId(parentFolderId, childFolderPath) {
     actions.debug(`parentFolderId: ${parentFolderId}`);
@@ -91,7 +91,6 @@ async function getUploadFolderId(parentFolderId, childFolderPath) {
     } = await DRIVE.files.list({
         q: `name='${currentFolder}' and '${parentFolderId}' in parents and trashed=false`,
         fields: 'files(id)',
-        includeItemsFromAllDrives: true,
         supportsAllDrives: true,
     });
 
@@ -133,7 +132,8 @@ async function getUploadFolderId(parentFolderId, childFolderPath) {
  * @param {string} filePath Path to the file on the filesystem
  * @param {boolean} override Whether or not to remove and replace the current file if it exists
  * @param {string} uploadFolderId Id of the new files parent
- * @returns {Object} Response from the google drive files create api
+ * @returns {Promise<import('googleapis').drive_v3.Schema$File>}
+ *          Response from the google drive files create api
  */
 async function uploadFile(fileName, filePath, override, uploadFolderId) {
     console.log(`Uploading ${fileName} ...`);
@@ -152,21 +152,26 @@ async function uploadFile(fileName, filePath, override, uploadFolderId) {
     };
 
     if (override) {
-        const { files } = await DRIVE.files.list({
-            q: `'${uploadFolderId}' in parents`,
+        const { data: { files } } = await DRIVE.files.list({
+            q: `'${uploadFolderId}' in parents and trashed=false`,
             fields: 'nextPageToken, files(id, name)',
+            supportsAllDrives: true,
         });
 
-        for (const file in files) {
+        for (const file of files) {
             if (file.name === fileName) {
                 const fileId = file.id;
 
                 actions.debug(`Removing ${file.name}(${file.id})`);
 
-                await DRIVE.files.delete({ fileId });
+                await DRIVE.files.delete({ fileId }, {
+                    supportsAllDrives: true,
+                });
             }
         }
     }
+
+    actions.debug(`Creating ${fileMetadata.name} in ${fileMetadata.parents[0]}`);
 
     return DRIVE.files.create({
         requestBody: fileMetadata,
