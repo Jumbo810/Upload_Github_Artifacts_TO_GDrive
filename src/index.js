@@ -92,6 +92,7 @@ async function getUploadFolderId(parentFolderId, childFolderPath) {
         q: `name='${currentFolder}' and '${parentFolderId}' in parents and trashed=false`,
         fields: 'files(id)',
         supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
     });
 
     actions.debug(`files: ${JSON.stringify(files)}`);
@@ -156,6 +157,7 @@ async function uploadFile(fileName, filePath, override, uploadFolderId) {
             q: `'${uploadFolderId}' in parents and trashed=false`,
             fields: 'nextPageToken, files(id, name)',
             supportsAllDrives: true,
+            includeItemsFromAllDrives: true,
         });
 
         for (const file of files) {
