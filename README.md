@@ -19,6 +19,8 @@ steps:
 #### `target` (Required):
 Local path to the file to upload, can be relative from github runner current directory.
 
+You can also specify a glob pattern to upload multiple files at once (this will cause the name property to be ignored).
+
 #### `credentials` (Required):
 A service account public/private key pair encoded in base64.
 
@@ -30,7 +32,7 @@ Run `base64 my_service_account_key.json > encoded.txt` and paste the encoded str
 The id of the drive folder where you want to upload your file. It is the string of characters after the last `/` when browsing to your folder URL. You must share the folder with the service account (using its email address) unless you specify a `owner`.
 
 #### `name` (Optional):
-The name of the file to be uploaded. Set to the `target` filename if not specified.
+The name of the file to be uploaded. Set to the `target` filename if not specified. (Ignored if target contains a glob `*` or `**`)
 
 #### `child_folder` (Optional):
 A sub-folder where to upload your file. It will be created if non-existent and must remain unique. Useful to organize your drive like so:
