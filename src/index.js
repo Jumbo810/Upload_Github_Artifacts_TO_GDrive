@@ -225,6 +225,11 @@ async function main() {
             const fileName = path.basename(file);
             const filePath = path.resolve(file);
 
+            if (fs.lstatSync(filePath).isDirectory()) {
+                console.log(`Skipping directory ${fileName}`);
+                continue;
+            }
+
             await uploadFile(fileName, filePath, override, uploadFolderId);
         }
     } else {
