@@ -184,71 +184,54 @@ async function getUploadFolderId(parentFolderId, childFolderPath) {
 
     // Check if child folder already exists and is unique
     const listFilesOperation = async () => {
-        try {
-            return await DRIVE.files.list({
-                q: `name='${currentFolder}' and '${parentFolderId}' in parents and trashed=false`,
-                fields: 'files(id)',
-                supportsAllDrives: true,
-                includeItemsFromAllDrives: true,
-            });
-        } catch (error) {
-            // Check if this is a "File not found" error, which can happen with invalid folder IDs
-            if (error.message.includes('File not found')) {
-                console.log(`Warning: Could not list files in folder ${parentFolderId}. The folder may not exist or you may not have access to it.`);
-                // Return an empty files array instead of throwing an error
-                return { data: { files: [] } };
-            }
-            // For other errors, rethrow
-            throw error;
-        }
+        return DRIVE.files.list({
+            q: `name='${currentFolder}' and '${parentFolderId}' in parents and trashed=false`,
+            fields: 'files(id)',
+            supportsAllDrives: true,
+            includeItemsFromAllDrives: true,
+        });
     };
 
-    try {
-        const {
-            data: { files },
-        } = await withRetry(listFilesOperation, `List files in folder ${parentFolderId}`);
+    const {
+        data: { files },
+    } = await withRetry(listFilesOperation, `List files in folder ${parentFolderId}`);
 
-        actions.debug(`files: ${JSON.stringify(files)}`);
+    actions.debug(`files: ${JSON.stringify(files)}`);
 
-        if (files.length > 1) {
-            throw new Error(`More than one folder named '${currentFolder}' found in parent folder ${parentFolderId}`);
-        }
-        if (files.length === 1) {
-            actions.debug(`${currentFolder} exists inside ${parentFolderId}`);
-            // Folder exists, check that folders children
-            return getUploadFolderId(files[0].id, remainingFolderPath);
-        }
-
-        actions.debug(`${currentFolder} does not exist inside ${parentFolderId}`);
-        console.log(`Creating folder '${currentFolder}'...`);
-
-        const currentFolderMetadata = {
-            name: currentFolder,
-            mimeType: 'application/vnd.google-apps.folder',
-            parents: [parentFolderId],
-        };
-
-        const createFolderOperation = async () => {
-            return DRIVE.files.create({
-                requestBody: currentFolderMetadata,
-                fields: 'id',
-                supportsAllDrives: true,
-            });
-        };
-
-        const {
-            data: { id: currentFolderId },
-        } = await withRetry(createFolderOperation, `Create folder ${currentFolder}`);
-
-        actions.debug(`${currentFolder} id: ${currentFolderId}`);
-        console.log(`Folder '${currentFolder}' created successfully.`);
-
-        return getUploadFolderId(currentFolderId, remainingFolderPath);
-    } catch (error) {
-        console.log(`Warning: Error processing folder ${currentFolder}: ${error.message}`);
-        // Return the parent folder ID as a fallback
-        return parentFolderId;
+    if (files.length > 1) {
+        throw new Error(`More than one folder named '${currentFolder}' found in parent folder ${parentFolderId}`);
     }
+    if (files.length === 1) {
+        actions.debug(`${currentFolder} exists inside ${parentFolderId}`);
+        // Folder exists, check that folders children
+        return getUploadFolderId(files[0].id, remainingFolderPath);
+    }
+
+    actions.debug(`${currentFolder} does not exist inside ${parentFolderId}`);
+    console.log(`Creating folder '${currentFolder}'...`);
+
+    const currentFolderMetadata = {
+        name: currentFolder,
+        mimeType: 'application/vnd.google-apps.folder',
+        parents: [parentFolderId],
+    };
+
+    const createFolderOperation = async () => {
+        return DRIVE.files.create({
+            requestBody: currentFolderMetadata,
+            fields: 'id',
+            supportsAllDrives: true,
+        });
+    };
+
+    const {
+        data: { id: currentFolderId },
+    } = await withRetry(createFolderOperation, `Create folder ${currentFolder}`);
+
+    actions.debug(`${currentFolder} id: ${currentFolderId}`);
+    console.log(`Folder '${currentFolder}' created successfully.`);
+
+    return getUploadFolderId(currentFolderId, remainingFolderPath);
 }
 
 /**
@@ -278,37 +261,20 @@ function validateReplaceMode(replaceMode) {
  */
 async function findExistingFiles(fileName, uploadFolderId) {
     const listFilesOperation = async () => {
-        try {
-            return await DRIVE.files.list({
-                q: `'${uploadFolderId}' in parents and name='${fileName}' and trashed=false`,
-                fields: 'nextPageToken, files(id, name, webViewLink)',
-                supportsAllDrives: true,
-                includeItemsFromAllDrives: true,
-            });
-        } catch (error) {
-            // Check if this is a "File not found" error, which can happen with invalid folder IDs
-            if (error.message.includes('File not found')) {
-                console.log(`Warning: Could not list files in folder ${uploadFolderId}. The folder may not exist or you may not have access to it.`);
-                // Return an empty files array instead of throwing an error
-                return { data: { files: [] } };
-            }
-            // For other errors, rethrow
-            throw error;
-        }
+        return DRIVE.files.list({
+            q: `'${uploadFolderId}' in parents and name='${fileName}' and trashed=false`,
+            fields: 'nextPageToken, files(id, name, webViewLink)',
+            supportsAllDrives: true,
+            includeItemsFromAllDrives: true,
+        });
     };
 
-    try {
-        const { data: { files } } = await withRetry(
-            listFilesOperation, 
-            `List files in folder ${uploadFolderId} with name ${fileName}`
-        );
-        
-        return files;
-    } catch (error) {
-        console.log(`Warning: Error listing files in folder ${uploadFolderId}: ${error.message}`);
-        // Return empty array instead of failing
-        return [];
-    }
+    const { data: { files } } = await withRetry(
+        listFilesOperation, 
+        `List files in folder ${uploadFolderId} with name ${fileName}`
+    );
+    
+    return files;
 }
 
 /**
