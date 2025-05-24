@@ -8,7 +8,7 @@ steps:
     - uses: actions/checkout@v4.1.1
 
     - name: Upload Artifacts TO Google Drive
-      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.2.2
+      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.0
       with:
         target: <LOCAL_PATH_TO_YOUR_FILE>
         credentials: ${{ secrets.<YOUR_SERVICE_ACCOUNT_CREDENTIALS> }}
@@ -50,6 +50,47 @@ A sub-folder where to upload your file. It will be created if non-existent and m
 #### `owner` (Optional):
 The email address of a user account that has access to the drive folder and will get the ownership of the file after its creation. To use this feature you must grant your service account a [domain-wide delegation of authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) beforehand.
 
-
 #### `override` (Optional):
 If set true, delete files with the same name before uploading.
+
+#### `replace_mode` (Optional):
+Determines how to handle existing files with the same name. Options:
+- `delete_first`: Delete existing files before uploading (same as override=true)
+- `update_in_place`: Update the existing file in place, preserving file ID and sharing links
+- `add_new`: Create a new file even if one with the same name exists (default)
+
+### Outputs
+
+The action provides the following outputs that can be used in subsequent steps:
+
+### Single File Upload:
+- `file_id`: The ID of the uploaded file
+- `file_name`: The name of the uploaded file
+- `web_view_link`: The web view link to access the file in Google Drive
+- `upload_count`: The number of files uploaded (will be "1")
+
+### Multiple File Upload (using glob patterns):
+- `file_ids`: Comma-separated list of file IDs
+- `file_names`: Comma-separated list of file names
+- `web_view_links`: Comma-separated list of web view links
+- `upload_count`: The number of files uploaded
+
+### Example usage of outputs:
+
+```yaml
+- name: Upload to Google Drive
+  id: upload
+  uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.0
+  with:
+    credentials: ${{ secrets.GOOGLE_CREDENTIALS }}
+    parent_folder_id: ${{ secrets.GOOGLE_PARENT_FOLDER_ID }}
+    target: "./build/my-app.zip"
+    
+- name: Use the upload outputs
+  run: |
+    echo "File ID: ${{ steps.upload.outputs.file_id }}"
+    echo "File Name: ${{ steps.upload.outputs.file_name }}"
+    echo "Web View Link: ${{ steps.upload.outputs.web_view_link }}"
+```
+
+## Release Process

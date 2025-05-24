@@ -1,6 +1,6 @@
 {
   "name": "Upload_Github_Artifacts_TO_GDrive",
-  "version": "1.0",
+  "version": "2.3.0",
   "description": "Github Action To Upload Artifacts to Google Drive using a service account",
   "main": "index.js",
   "author": "Twiter.com@Jumbo810",
