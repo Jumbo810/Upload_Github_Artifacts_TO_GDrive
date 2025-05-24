@@ -47,7 +47,7 @@ steps:
 Before using this action, you need to set up the Google Drive API:
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
+2. [Create a new project](https://console.cloud.google.com/projectcreate) or select an existing one
 3. Enable the Google Drive API
 4. Create a service account
 5. Create a key for the service account (JSON format)
@@ -137,7 +137,7 @@ steps:
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | `target` | Yes | Local path to the file to upload, can be relative from github runner current directory. You can also specify a glob pattern to upload multiple files at once (this will cause the name property to be ignored). |
-| `credentials` | Yes | A service account public/private key pair encoded in base64. [Generate and download your credentials in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) |
+| `credentials` | Yes | A service account public/private key pair encoded in base64. **Note:** In the video tutorial, this link points to the project creation page. For creating and downloading credentials, follow steps 4-5 in the [Setting Up Google Drive API](#-setting-up-google-drive-api) section above. |
 | `parent_folder_id` | Yes | The id of the drive folder where you want to upload your file. It is the string of characters after the last `/` when browsing to your folder URL. You must share the folder with the service account (using its email address) unless you specify a `owner`. |
 | `name` | No | The name of the file to be uploaded. Set to the `target` filename if not specified. (Ignored if target contains a glob `*` or `**`) |
 | `child_folder` | No | A sub-folder where to upload your file. It will be created if non-existent and must remain unique. |
