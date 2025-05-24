@@ -1,12 +1,14 @@
 name: CI
 
-on: push
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
   lint:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4.1.1
 
@@ -14,7 +16,12 @@ jobs:
       uses: actions/setup-node@v4.0.0
       with:
         node-version: '22.x'
-        cache: 'yarn'
+
+    - name: Enable Corepack
+      run: corepack enable
+
+    - name: Enable Corepack
+      run: corepack enable
 
     - name: Install dependencies
       run: yarn install
@@ -23,9 +30,7 @@ jobs:
       run: yarn lint
 
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4.1.1
 
@@ -33,10 +38,22 @@ jobs:
       uses: actions/setup-node@v4.0.0
       with:
         node-version: '22.x'
-        cache: 'yarn'
+
+    - name: Enable Corepack
+      run: corepack enable
+
+    - name: Enable Corepack
+      run: corepack enable
 
     - name: Install dependencies
       run: yarn install
 
     - name: Build
       run: yarn build
+      
+    - name: Upload dist
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+        retention-days: 7

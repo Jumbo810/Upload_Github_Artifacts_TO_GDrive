@@ -1,0 +1,62 @@
+name: Test Action
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'action.yml'
+      - '.github/workflows/test.yml'
+
+jobs:
+  test-action-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version: '22.x'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+      - name: Create test file
+        run: echo "This is a test file" > test-file.txt
+
+      # This step will be skipped in PR builds since secrets are not available
+      # It will only run when manually triggered with workflow_dispatch
+      - name: Test Action (if credentials available)
+        if: github.event_name == 'workflow_dispatch'
+        uses: ./
+        continue-on-error: true
+        id: test_upload
+        with:
+          target: test-file.txt
+          credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
+          parent_folder_id: ${{ secrets.GDRIVE_FOLDER_ID }}
+          name: test-upload.txt
+          override: true
+
+      - name: Check if upload was attempted
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ steps.test_upload.outcome }}" == "success" ]; then
+            echo "✅ Upload test passed"
+          else
+            echo "❌ Upload test failed"
+            exit 1
+          fi
