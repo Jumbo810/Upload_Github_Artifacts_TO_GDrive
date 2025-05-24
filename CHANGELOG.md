@@ -20,16 +20,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling with retry logic for API operations
 - Better logging for debugging issues
 - Support for Windows self-hosted runners
+- Automated workflows for dist updates and releases
+- Custom ESLint configuration
 
 ### Fixed
 - Issue with `override` parameter not working on some runners
 - Improved folder creation logic with better error handling
 - Better handling of glob pattern matching
+- Fixed missing eslint-plugin-import dependency
 
 ### Changed
+- Updated dependencies to latest versions:
+  - @actions/core: ^1.11.1
+  - glob: ^11.0.2
+  - googleapis: ^149.0.0
 - Updated documentation with examples of using outputs
 - Improved code structure with better separation of concerns
 - Enhanced logging for better debugging
+
+### Security
+- Added SECURITY.md with security best practices
 
 ## [2.2.3] - 2023-05-24
 
