@@ -69,7 +69,8 @@ Before using this action, you need to set up the Google Drive API:
    ```
 
 7. Store the encoded key in a GitHub Secret
-8. Create a folder in Google Drive where you want to upload artifacts, then share it with the service account email address and set permission to "Editor" so the service account can upload files to this folder
+8. Create a folder in Google Drive where you want to upload artifacts, then set the share permission to "Editor" so the Github Action can upload the files to this folder using service account.
+9. Copy the ID of your Google Drive folder from the browser URL. When you're viewing your folder in Google Drive, the folder ID is the long string of characters that appears after 'folders/' in the URL. For example, in the URL 'https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz12345', the folder ID is '1AbCdEfGhIjKlMnOpQrStUvWxYz12345'. You'll need this ID for the parent_folder_id parameter in your GitHub workflow.
 
 For a visual guide, please refer to our [video tutorial](https://drive.google.com/file/d/1GsKSFmh5IpujFuOaKKsOYKvar-tf5etY/view?usp=sharing).
 
