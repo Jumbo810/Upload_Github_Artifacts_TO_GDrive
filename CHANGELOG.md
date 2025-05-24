@@ -5,14 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.3.2] - 2025-05-24
-
-### Fixed
-- Improved error handling for Google Drive API operations
-- Added graceful handling of "File not found" errors when listing files
-- Better folder creation error handling with fallback to parent folder
-- Fixed issue with invalid folder IDs causing action to fail
-
 ## [2.3.1] - 2025-05-24
 
 ### Fixed
