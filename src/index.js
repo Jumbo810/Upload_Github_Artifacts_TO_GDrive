@@ -62,17 +62,17 @@ function getBooleanInputAndDebug(name, options) {
 
 /**
  * Sleep for a specified number of milliseconds
- * 
+ *
  * @param {number} ms - Milliseconds to sleep
  * @returns {Promise<void>}
  */
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
  * Execute a function with retry logic
- * 
+ *
  * @template T
  * @param {function(): Promise<T>} fn - Function to execute
  * @param {string} operationName - Name of the operation for logging
@@ -82,28 +82,32 @@ function sleep(ms) {
  */
 async function withRetry(fn, operationName, maxRetries = MAX_RETRIES, baseDelay = BASE_RETRY_DELAY) {
     let lastError;
-    
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             return await fn();
         } catch (error) {
             lastError = error;
-            
+
             if (attempt < maxRetries) {
-                const delay = baseDelay * Math.pow(2, attempt - 1);
-                console.log(`${operationName} failed (attempt ${attempt}/${maxRetries}). Retrying in ${delay}ms...`);
+                const delay = baseDelay * (2 ** (attempt - 1));
+
+                console.log(
+                    `${operationName} failed (attempt ${attempt}/${maxRetries}). Retrying in ${delay}ms...`,
+                );
+
                 actions.warning(`${operationName} failed: ${error.message}. Retrying...`);
                 await sleep(delay);
             }
         }
     }
-    
+
     throw new Error(`${operationName} failed after ${maxRetries} attempts: ${lastError.message}`);
 }
 
 /**
  * Validates that the input file or pattern exists
- * 
+ *
  * @param {string} target - File path or glob pattern
  * @throws {Error} If the target doesn't exist
  */
@@ -112,8 +116,9 @@ function validateTarget(target) {
         // For glob patterns, we'll check if any files match during processing
         return;
     }
-    
+
     const resolvedPath = path.resolve(target);
+
     if (!fs.existsSync(resolvedPath)) {
         throw new Error(`Target file not found: ${resolvedPath}`);
     }
@@ -121,7 +126,7 @@ function validateTarget(target) {
 
 /**
  * Validates the credentials format
- * 
+ *
  * @param {string} credentials - Base64 encoded credentials
  * @throws {Error} If the credentials are invalid
  */
@@ -129,7 +134,7 @@ function validateCredentials(credentials) {
     try {
         const decoded = Buffer.from(credentials, 'base64').toString();
         const parsed = JSON.parse(decoded);
-        
+
         if (!parsed.client_email || !parsed.private_key) {
             throw new Error('Missing required fields in credentials');
         }
@@ -140,7 +145,7 @@ function validateCredentials(credentials) {
 
 /**
  * Validates the replace mode
- * 
+ *
  * @param {string} replaceMode - The replace mode to validate
  * @returns {string} The validated replace mode
  * @throws {Error} If the replace mode is invalid
@@ -148,11 +153,11 @@ function validateCredentials(credentials) {
 function validateReplaceMode(replaceMode) {
     const mode = replaceMode.toLowerCase();
     const validModes = Object.values(REPLACE_MODES);
-    
+
     if (!validModes.includes(mode)) {
         throw new Error(`Invalid replace_mode: ${replaceMode}. Valid options are: ${validModes.join(', ')}`);
     }
-    
+
     return mode;
 }
 
@@ -201,14 +206,12 @@ async function getUploadFolderId(parentFolderId, childFolderPath) {
     actions.debug(`remainingFolderPath: ${remainingFolderPath}`);
 
     // Check if child folder already exists and is unique
-    const listFilesOperation = async () => {
-        return DRIVE.files.list({
-            q: `name='${currentFolder}' and '${parentFolderId}' in parents and trashed=false and mimeType='application/vnd.google-apps.folder'`,
-            fields: 'files(id)',
-            supportsAllDrives: true,
-            includeItemsFromAllDrives: true,
-        });
-    };
+    const listFilesOperation = async () => DRIVE.files.list({
+        q: `name='${currentFolder}' and '${parentFolderId}' in parents and trashed=false and mimeType='application/vnd.google-apps.folder'`,
+        fields: 'files(id)',
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+    });
 
     const {
         data: { files },
@@ -234,13 +237,11 @@ async function getUploadFolderId(parentFolderId, childFolderPath) {
         parents: [parentFolderId],
     };
 
-    const createFolderOperation = async () => {
-        return DRIVE.files.create({
-            requestBody: currentFolderMetadata,
-            fields: 'id',
-            supportsAllDrives: true,
-        });
-    };
+    const createFolderOperation = async () => DRIVE.files.create({
+        requestBody: currentFolderMetadata,
+        fields: 'id',
+        supportsAllDrives: true,
+    });
 
     const {
         data: { id: currentFolderId },
@@ -254,32 +255,30 @@ async function getUploadFolderId(parentFolderId, childFolderPath) {
 
 /**
  * Find existing files with the same name in the target folder
- * 
+ *
  * @param {string} fileName - Name of the file to search for
  * @param {string} uploadFolderId - ID of the folder to search in
  * @returns {Promise<Array<{id: string, name: string}>>} - Array of matching files
  */
 async function findExistingFiles(fileName, uploadFolderId) {
-    const listFilesOperation = async () => {
-        return DRIVE.files.list({
-            q: `'${uploadFolderId}' in parents and name='${fileName}' and trashed=false`,
-            fields: 'nextPageToken, files(id, name, webViewLink)',
-            supportsAllDrives: true,
-            includeItemsFromAllDrives: true,
-        });
-    };
+    const listFilesOperation = async () => DRIVE.files.list({
+        q: `'${uploadFolderId}' in parents and name='${fileName}' and trashed=false`,
+        fields: 'nextPageToken, files(id, name, webViewLink)',
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+    });
 
     const { data: { files } } = await withRetry(
-        listFilesOperation, 
-        `List files in folder ${uploadFolderId} with name ${fileName}`
+        listFilesOperation,
+        `List files in folder ${uploadFolderId} with name ${fileName}`,
     );
-    
+
     return files;
 }
 
 /**
  * Delete an existing file
- * 
+ *
  * @param {string} fileId - ID of the file to delete
  * @param {string} fileName - Name of the file (for logging)
  * @returns {Promise<void>}
@@ -288,12 +287,10 @@ async function deleteFile(fileId, fileName) {
     console.log(`Found existing file '${fileName}'. Removing...`);
     actions.debug(`Removing ${fileName}(${fileId})`);
 
-    const deleteFileOperation = async () => {
-        return DRIVE.files.delete({ 
-            fileId,
-            supportsAllDrives: true,
-        });
-    };
+    const deleteFileOperation = async () => DRIVE.files.delete({
+        fileId,
+        supportsAllDrives: true,
+    });
 
     await withRetry(deleteFileOperation, `Delete file ${fileName} (${fileId})`);
     console.log(`Existing file '${fileName}' removed successfully.`);
@@ -301,7 +298,7 @@ async function deleteFile(fileId, fileName) {
 
 /**
  * Update an existing file with new content
- * 
+ *
  * @param {string} fileId - ID of the file to update
  * @param {string} fileName - Name of the file
  * @param {string} filePath - Path to the new file content
@@ -315,22 +312,21 @@ async function updateFile(fileId, fileName, filePath) {
         body: fs.createReadStream(filePath),
     };
 
-    const updateFileOperation = async () => {
-        return DRIVE.files.update({
-            fileId,
-            media: fileData,
-            fields: 'id,name,webViewLink',
-            supportsAllDrives: true,
-        });
-    };
+    const updateFileOperation = async () => DRIVE.files.update({
+        fileId,
+        media: fileData,
+        fields: 'id,name,webViewLink',
+        supportsAllDrives: true,
+    });
 
     const result = await withRetry(updateFileOperation, `Update file ${fileName}`);
+
     console.log(`File '${fileName}' updated successfully. ID: ${result.data.id}`);
-    
+
     if (result.data.webViewLink) {
         console.log(`View file: ${result.data.webViewLink}`);
     }
-    
+
     return result.data;
 }
 
@@ -361,6 +357,7 @@ async function uploadFile(fileName, filePath, replaceMode, override, uploadFolde
     }
 
     const fileStats = await fs.promises.stat(filePath);
+
     console.log(`File size: ${(fileStats.size / 1024 / 1024).toFixed(2)} MB`);
 
     // For backward compatibility, if override is true, use DELETE_FIRST mode
@@ -371,7 +368,7 @@ async function uploadFile(fileName, filePath, replaceMode, override, uploadFolde
 
     // Find existing files with the same name
     const existingFiles = await findExistingFiles(fileName, uploadFolderId);
-    
+
     // Handle existing files based on replace mode
     if (existingFiles.length > 0) {
         if (replaceMode === REPLACE_MODES.DELETE_FIRST) {
@@ -385,14 +382,14 @@ async function uploadFile(fileName, filePath, replaceMode, override, uploadFolde
                 console.log(`Warning: Multiple files with name '${fileName}' found. Updating the first one.`);
             }
             const updatedFile = await updateFile(existingFiles[0].id, fileName, filePath);
-            
+
             // Set outputs
             actions.setOutput('file_id', updatedFile.id);
             actions.setOutput('file_name', updatedFile.name);
             if (updatedFile.webViewLink) {
                 actions.setOutput('web_view_link', updatedFile.webViewLink);
             }
-            
+
             return updatedFile;
         }
         // For ADD_NEW mode, we just proceed with creating a new file
@@ -411,30 +408,29 @@ async function uploadFile(fileName, filePath, replaceMode, override, uploadFolde
         body: fs.createReadStream(filePath),
     };
 
-    const createFileOperation = async () => {
-        return DRIVE.files.create({
-            requestBody: fileMetadata,
-            media: fileData,
-            uploadType: 'multipart',
-            fields: 'id,name,webViewLink',
-            supportsAllDrives: true,
-        });
-    };
+    const createFileOperation = async () => DRIVE.files.create({
+        requestBody: fileMetadata,
+        media: fileData,
+        uploadType: 'multipart',
+        fields: 'id,name,webViewLink',
+        supportsAllDrives: true,
+    });
 
     const result = await withRetry(createFileOperation, `Upload file ${fileName}`);
+
     console.log(`File '${fileName}' uploaded successfully. ID: ${result.data.id}`);
-    
+
     if (result.data.webViewLink) {
         console.log(`View file: ${result.data.webViewLink}`);
     }
-    
+
     // Set outputs
     actions.setOutput('file_id', result.data.id);
     actions.setOutput('file_name', result.data.name);
     if (result.data.webViewLink) {
         actions.setOutput('web_view_link', result.data.webViewLink);
     }
-    
+
     return result.data;
 }
 
@@ -449,12 +445,12 @@ async function main() {
         const override = getBooleanInputAndDebug('override', { required: false });
         const filename = getInputAndDebug('name', { required: false });
         let replaceMode = getInputAndDebug('replace_mode', { required: false }) || REPLACE_MODES.ADD_NEW;
-        
+
         // Validate inputs
         validateTarget(target);
         validateCredentials(credentials);
         replaceMode = validateReplaceMode(replaceMode);
-        
+
         // Log all inputs for debugging
         console.log('Input parameters:');
         console.log(`- target: ${target}`);
@@ -463,7 +459,7 @@ async function main() {
         console.log(`- name: ${filename || '(not set)'}`);
         console.log(`- override: ${override}`);
         console.log(`- replace_mode: ${replaceMode}`);
-        
+
         // Authenticate with Google
         console.log('Authenticating with Google Drive API...');
         const credentialsJSON = JSON.parse(
@@ -499,7 +495,7 @@ async function main() {
 
         let uploadCount = 0;
         let errorCount = 0;
-        let uploadedFiles = [];
+        const uploadedFiles = [];
 
         if (target.includes('*')) {
             console.log(`Finding files matching pattern: ${target}`);
@@ -523,6 +519,7 @@ async function main() {
                 if (!fs.lstatSync(filePath).isDirectory()) {
                     try {
                         const uploadedFile = await uploadFile(fileName, filePath, replaceMode, override, uploadFolderId);
+
                         uploadCount++;
                         uploadedFiles.push(uploadedFile);
                     } catch (error) {
@@ -543,33 +540,34 @@ async function main() {
             }
 
             const uploadedFile = await uploadFile(fileName, filePath, replaceMode, override, uploadFolderId);
+
             uploadCount++;
             uploadedFiles.push(uploadedFile);
         }
 
         console.log(`Upload summary: ${uploadCount} files uploaded successfully, ${errorCount} failures.`);
-        
+
         if (errorCount > 0) {
             actions.setFailed(`${errorCount} file(s) failed to upload.`);
         } else {
             actions.setOutput('upload_count', uploadCount.toString());
-            
+
             // Set outputs for multiple files
             if (uploadedFiles.length > 0) {
-                const fileIds = uploadedFiles.map(file => file.id).join(',');
-                const fileNames = uploadedFiles.map(file => file.name).join(',');
+                const fileIds = uploadedFiles.map((file) => file.id).join(',');
+                const fileNames = uploadedFiles.map((file) => file.name).join(',');
                 const webViewLinks = uploadedFiles
-                    .filter(file => file.webViewLink)
-                    .map(file => file.webViewLink)
+                    .filter((file) => file.webViewLink)
+                    .map((file) => file.webViewLink)
                     .join(',');
-                
+
                 actions.setOutput('file_ids', fileIds);
                 actions.setOutput('file_names', fileNames);
                 if (webViewLinks) {
                     actions.setOutput('web_view_links', webViewLinks);
                 }
             }
-            
+
             console.log('All uploads completed successfully.');
         }
     } catch (error) {
