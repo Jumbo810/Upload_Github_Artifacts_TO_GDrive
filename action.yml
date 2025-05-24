@@ -1,25 +1,25 @@
 name: 'Upload Github-Actions Artifacts TO Google Drive'
-description: 'Github Action To Upload Github-Actions -> Artifacts -> Google Drive Using A Google Drive Api!'
+description: 'Securely upload files from GitHub Actions to Google Drive with support for multiple files, nested folders, and custom naming'
 inputs:
   credentials:
-    description: 'Google service account credentials'
+    description: 'Google service account credentials (base64 encoded JSON)'
     required: true
   parent_folder_id:
     description: 'Google Drive folder ID to upload the file to'
     required: true
   target:
-    description: 'Local path to the file to upload'
+    description: 'Local path to the file to upload (supports glob patterns for multiple files)'
     required: true
   owner:
-    description: 'Optional user account email (Require domain-wide authority delegation)'
+    description: 'Optional user account email (Requires domain-wide authority delegation)'
     required: false
     default: null
   name:
-    description: 'Optional name for the target file'
+    description: 'Optional name for the target file (ignored when using glob patterns)'
     required: false
     default: null
   child_folder:
-    description: 'Optional sub-folder to upload the file to (Will be created if non-existent)'
+    description: 'Optional sub-folder path to upload the file to (Will be created if non-existent)'
     required: false
     default: null
   override:

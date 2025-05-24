@@ -1,12 +1,14 @@
 name: CI
 
-on: push
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
   lint:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4.1.1
 
@@ -23,9 +25,7 @@ jobs:
       run: yarn lint
 
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4.1.1
 
@@ -40,3 +40,10 @@ jobs:
 
     - name: Build
       run: yarn build
+      
+    - name: Upload dist
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+        retention-days: 7
