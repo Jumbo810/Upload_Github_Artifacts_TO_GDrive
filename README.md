@@ -137,7 +137,7 @@ steps:
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | `target` | Yes | Local path to the file to upload, can be relative from github runner current directory. You can also specify a glob pattern to upload multiple files at once (this will cause the name property to be ignored). |
-| `credentials` | Yes | A service account public/private key pair encoded in base64. **Note:** In the video tutorial, this link points to the project creation page. For creating and downloading credentials, follow steps 4-5 in the [Setting Up Google Drive API](#-setting-up-google-drive-api) section above. |
+| `credentials` | Yes | A service account public/private key pair encoded in base64. |
 | `parent_folder_id` | Yes | The id of the drive folder where you want to upload your file. It is the string of characters after the last `/` when browsing to your folder URL. You must share the folder with the service account (using its email address) unless you specify a `owner`. |
 | `name` | No | The name of the file to be uploaded. Set to the `target` filename if not specified. (Ignored if target contains a glob `*` or `**`) |
 | `child_folder` | No | A sub-folder where to upload your file. It will be created if non-existent and must remain unique. |
@@ -218,3 +218,4 @@ For security best practices when using this action, please refer to our [Securit
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
