@@ -125,6 +125,23 @@ The email address of a user account that has access to the drive folder and will
 ### `override` (Optional):
 If set true, delete files with the same name before uploading.
 
+## Release Process
+
+This project uses automated workflows to simplify the release process:
+
+1. **Automatic Dist Updates**: After successful CI runs on the master branch, the `dist/index.js` file is automatically updated with the latest build artifact. This eliminates the need to manually download and replace the file before publishing.
+
+2. **Creating a Release**:
+   - Update the version in `package.json` and `CHANGELOG.md`
+   - Merge changes to the master branch
+   - Create and push a new tag: `git tag v2.2.3 && git push origin v2.2.3`
+   - The release workflow will automatically:
+     - Build the project
+     - Create a GitHub release with notes from CHANGELOG.md
+     - Attach the necessary files to the release
+
+This automation ensures that the published action always contains the latest compiled code without manual intervention.
+
 ## Setting Up Google Drive API
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
