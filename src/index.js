@@ -364,9 +364,10 @@ async function uploadFile(fileName, filePath, replaceMode, override, uploadFolde
     console.log(`File size: ${(fileStats.size / 1024 / 1024).toFixed(2)} MB`);
 
     // For backward compatibility, if override is true, use DELETE_FIRST mode
+    let effectiveReplaceMode = replaceMode;
     if (override === true && replaceMode === REPLACE_MODES.ADD_NEW) {
         console.log('Override parameter is set to true, using delete_first replace mode');
-        replaceMode = REPLACE_MODES.DELETE_FIRST;
+        effectiveReplaceMode = REPLACE_MODES.DELETE_FIRST;
     }
 
     // Find existing files with the same name
@@ -374,12 +375,12 @@ async function uploadFile(fileName, filePath, replaceMode, override, uploadFolde
     
     // Handle existing files based on replace mode
     if (existingFiles.length > 0) {
-        if (replaceMode === REPLACE_MODES.DELETE_FIRST) {
+        if (effectiveReplaceMode === REPLACE_MODES.DELETE_FIRST) {
             // Delete all existing files with the same name
             for (const file of existingFiles) {
                 await deleteFile(file.id, file.name);
             }
-        } else if (replaceMode === REPLACE_MODES.UPDATE_IN_PLACE) {
+        } else if (effectiveReplaceMode === REPLACE_MODES.UPDATE_IN_PLACE) {
             // Update the first file in place and return
             if (existingFiles.length > 1) {
                 console.log(`Warning: Multiple files with name '${fileName}' found. Updating the first one.`);
@@ -499,7 +500,7 @@ async function main() {
 
         let uploadCount = 0;
         let errorCount = 0;
-        let uploadedFiles = [];
+        const uploadedFiles = [];
 
         if (target.includes('*')) {
             console.log(`Finding files matching pattern: ${target}`);
