@@ -14,9 +14,10 @@ jobs:
       uses: actions/setup-node@v4.0.0
       with:
         node-version: '22.x'
+        cache: 'yarn'
 
     - name: Install dependencies
-      run: yarn
+      run: yarn install
 
     - name: Lint
       run: yarn lint
@@ -32,9 +33,10 @@ jobs:
       uses: actions/setup-node@v4.0.0
       with:
         node-version: '22.x'
+        cache: 'yarn'
 
     - name: Install dependencies
-      run: yarn
+      run: yarn install
 
     - name: Build
       run: yarn build
