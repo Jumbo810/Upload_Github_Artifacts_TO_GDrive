@@ -24,6 +24,15 @@ const MAX_RETRIES = 3;
 const BASE_RETRY_DELAY = 1000;
 
 /**
+ * Valid replace modes for handling existing files
+ */
+const REPLACE_MODES = {
+    DELETE_FIRST: 'delete_first',
+    UPDATE_IN_PLACE: 'update_in_place',
+    ADD_NEW: 'add_new',
+};
+
+/**
  * Get input value and log value to debug
  *
  * @param {string} name
@@ -226,19 +235,121 @@ async function getUploadFolderId(parentFolderId, childFolderPath) {
 }
 
 /**
+ * Validates the replace mode
+ * 
+ * @param {string} replaceMode - The replace mode to validate
+ * @returns {string} The validated replace mode
+ * @throws {Error} If the replace mode is invalid
+ */
+function validateReplaceMode(replaceMode) {
+    const mode = replaceMode.toLowerCase();
+    const validModes = Object.values(REPLACE_MODES);
+    
+    if (!validModes.includes(mode)) {
+        throw new Error(`Invalid replace_mode: ${replaceMode}. Valid options are: ${validModes.join(', ')}`);
+    }
+    
+    return mode;
+}
+
+/**
+ * Find existing files with the same name in the target folder
+ * 
+ * @param {string} fileName - Name of the file to search for
+ * @param {string} uploadFolderId - ID of the folder to search in
+ * @returns {Promise<Array<{id: string, name: string}>>} - Array of matching files
+ */
+async function findExistingFiles(fileName, uploadFolderId) {
+    const listFilesOperation = async () => {
+        return DRIVE.files.list({
+            q: `'${uploadFolderId}' in parents and name='${fileName}' and trashed=false`,
+            fields: 'nextPageToken, files(id, name, webViewLink)',
+            supportsAllDrives: true,
+            includeItemsFromAllDrives: true,
+        });
+    };
+
+    const { data: { files } } = await withRetry(
+        listFilesOperation, 
+        `List files in folder ${uploadFolderId} with name ${fileName}`
+    );
+    
+    return files;
+}
+
+/**
+ * Delete an existing file
+ * 
+ * @param {string} fileId - ID of the file to delete
+ * @param {string} fileName - Name of the file (for logging)
+ * @returns {Promise<void>}
+ */
+async function deleteFile(fileId, fileName) {
+    console.log(`Found existing file '${fileName}'. Removing...`);
+    actions.debug(`Removing ${fileName}(${fileId})`);
+
+    const deleteFileOperation = async () => {
+        return DRIVE.files.delete({ 
+            fileId,
+            supportsAllDrives: true,
+        });
+    };
+
+    await withRetry(deleteFileOperation, `Delete file ${fileName} (${fileId})`);
+    console.log(`Existing file '${fileName}' removed successfully.`);
+}
+
+/**
+ * Update an existing file with new content
+ * 
+ * @param {string} fileId - ID of the file to update
+ * @param {string} fileName - Name of the file
+ * @param {string} filePath - Path to the new file content
+ * @returns {Promise<import('googleapis').drive_v3.Schema$File>} - Updated file data
+ */
+async function updateFile(fileId, fileName, filePath) {
+    console.log(`Found existing file '${fileName}'. Updating in place...`);
+    actions.debug(`Updating ${fileName}(${fileId})`);
+
+    const fileData = {
+        body: fs.createReadStream(filePath),
+    };
+
+    const updateFileOperation = async () => {
+        return DRIVE.files.update({
+            fileId,
+            media: fileData,
+            fields: 'id,name,webViewLink',
+            supportsAllDrives: true,
+        });
+    };
+
+    const result = await withRetry(updateFileOperation, `Update file ${fileName}`);
+    console.log(`File '${fileName}' updated successfully. ID: ${result.data.id}`);
+    
+    if (result.data.webViewLink) {
+        console.log(`View file: ${result.data.webViewLink}`);
+    }
+    
+    return result.data;
+}
+
+/**
  *  Uploads a file from the filesystem
  *
  * @param {string} fileName Name to use in Google Drive
  * @param {string} filePath Path to the file on the filesystem
- * @param {boolean} override Whether or not to remove and replace the current file if it exists
+ * @param {string} replaceMode How to handle existing files with the same name
+ * @param {boolean} override Whether or not to remove and replace the current file if it exists (legacy parameter)
  * @param {string} uploadFolderId Id of the new files parent
  * @returns {Promise<import('googleapis').drive_v3.Schema$File>}
  *          Response from the google drive files create api
  */
-async function uploadFile(fileName, filePath, override, uploadFolderId) {
-    console.log(`Uploading ${fileName} ...`);
+async function uploadFile(fileName, filePath, replaceMode, override, uploadFolderId) {
+    console.log(`Processing ${fileName} ...`);
     actions.debug(`fileName: ${fileName}`);
     actions.debug(`filePath: ${filePath}`);
+    actions.debug(`replaceMode: ${replaceMode}`);
     actions.debug(`override: ${override}`);
     actions.debug(`uploadFolderId: ${uploadFolderId}`);
 
@@ -252,42 +363,47 @@ async function uploadFile(fileName, filePath, override, uploadFolderId) {
     const fileStats = await fs.promises.stat(filePath);
     console.log(`File size: ${(fileStats.size / 1024 / 1024).toFixed(2)} MB`);
 
+    // For backward compatibility, if override is true, use DELETE_FIRST mode
+    if (override === true && replaceMode === REPLACE_MODES.ADD_NEW) {
+        console.log('Override parameter is set to true, using delete_first replace mode');
+        replaceMode = REPLACE_MODES.DELETE_FIRST;
+    }
+
+    // Find existing files with the same name
+    const existingFiles = await findExistingFiles(fileName, uploadFolderId);
+    
+    // Handle existing files based on replace mode
+    if (existingFiles.length > 0) {
+        if (replaceMode === REPLACE_MODES.DELETE_FIRST) {
+            // Delete all existing files with the same name
+            for (const file of existingFiles) {
+                await deleteFile(file.id, file.name);
+            }
+        } else if (replaceMode === REPLACE_MODES.UPDATE_IN_PLACE) {
+            // Update the first file in place and return
+            if (existingFiles.length > 1) {
+                console.log(`Warning: Multiple files with name '${fileName}' found. Updating the first one.`);
+            }
+            const updatedFile = await updateFile(existingFiles[0].id, fileName, filePath);
+            
+            // Set outputs
+            actions.setOutput('file_id', updatedFile.id);
+            actions.setOutput('file_name', updatedFile.name);
+            if (updatedFile.webViewLink) {
+                actions.setOutput('web_view_link', updatedFile.webViewLink);
+            }
+            
+            return updatedFile;
+        }
+        // For ADD_NEW mode, we just proceed with creating a new file
+    }
+
+    // Create a new file
+    console.log(`Uploading ${fileName} ...`);
     const fileMetadata = {
         name: fileName,
         parents: [uploadFolderId],
     };
-
-    if (override) {
-        const listFilesOperation = async () => {
-            return DRIVE.files.list({
-                q: `'${uploadFolderId}' in parents and name='${fileName}' and trashed=false`,
-                fields: 'nextPageToken, files(id, name)',
-                supportsAllDrives: true,
-                includeItemsFromAllDrives: true,
-            });
-        };
-
-        const { data: { files } } = await withRetry(
-            listFilesOperation, 
-            `List files in folder ${uploadFolderId} with name ${fileName}`
-        );
-
-        for (const file of files) {
-            const fileId = file.id;
-            console.log(`Found existing file '${file.name}'. Removing...`);
-            actions.debug(`Removing ${file.name}(${file.id})`);
-
-            const deleteFileOperation = async () => {
-                return DRIVE.files.delete({ 
-                    fileId,
-                    supportsAllDrives: true,
-                });
-            };
-
-            await withRetry(deleteFileOperation, `Delete file ${file.name} (${file.id})`);
-            console.log(`Existing file '${file.name}' removed successfully.`);
-        }
-    }
 
     actions.debug(`Creating ${fileMetadata.name} in ${fileMetadata.parents[0]}`);
 
@@ -312,7 +428,14 @@ async function uploadFile(fileName, filePath, override, uploadFolderId) {
         console.log(`View file: ${result.data.webViewLink}`);
     }
     
-    return result;
+    // Set outputs
+    actions.setOutput('file_id', result.data.id);
+    actions.setOutput('file_name', result.data.name);
+    if (result.data.webViewLink) {
+        actions.setOutput('web_view_link', result.data.webViewLink);
+    }
+    
+    return result.data;
 }
 
 async function main() {
@@ -325,11 +448,22 @@ async function main() {
         const childFolder = getInputAndDebug('child_folder', { required: false });
         const override = getBooleanInputAndDebug('override', { required: false });
         const filename = getInputAndDebug('name', { required: false });
-
+        let replaceMode = getInputAndDebug('replace_mode', { required: false }) || REPLACE_MODES.ADD_NEW;
+        
         // Validate inputs
         validateTarget(target);
         validateCredentials(credentials);
-
+        replaceMode = validateReplaceMode(replaceMode);
+        
+        // Log all inputs for debugging
+        console.log('Input parameters:');
+        console.log(`- target: ${target}`);
+        console.log(`- parent_folder_id: ${parentFolderId}`);
+        console.log(`- child_folder: ${childFolder || '(not set)'}`);
+        console.log(`- name: ${filename || '(not set)'}`);
+        console.log(`- override: ${override}`);
+        console.log(`- replace_mode: ${replaceMode}`);
+        
         // Authenticate with Google
         console.log('Authenticating with Google Drive API...');
         const credentialsJSON = JSON.parse(
@@ -365,6 +499,7 @@ async function main() {
 
         let uploadCount = 0;
         let errorCount = 0;
+        let uploadedFiles = [];
 
         if (target.includes('*')) {
             console.log(`Finding files matching pattern: ${target}`);
@@ -387,8 +522,9 @@ async function main() {
 
                 if (!fs.lstatSync(filePath).isDirectory()) {
                     try {
-                        await uploadFile(fileName, filePath, override, uploadFolderId);
+                        const result = await uploadFile(fileName, filePath, replaceMode, override, uploadFolderId);
                         uploadCount++;
+                        uploadedFiles.push(result);
                     } catch (error) {
                         console.error(`Error uploading ${fileName}: ${error.message}`);
                         actions.error(`Failed to upload ${fileName}: ${error.message}`);
@@ -406,8 +542,9 @@ async function main() {
                 throw new Error(`Target is a directory: ${filePath}. Please specify a file or use a glob pattern.`);
             }
 
-            await uploadFile(fileName, filePath, override, uploadFolderId);
+            const result = await uploadFile(fileName, filePath, replaceMode, override, uploadFolderId);
             uploadCount++;
+            uploadedFiles.push(result);
         }
 
         console.log(`Upload summary: ${uploadCount} files uploaded successfully, ${errorCount} failures.`);
@@ -416,6 +553,23 @@ async function main() {
             actions.setFailed(`${errorCount} file(s) failed to upload.`);
         } else {
             actions.setOutput('upload_count', uploadCount.toString());
+            
+            // Set outputs for multiple files
+            if (uploadedFiles.length > 0) {
+                const fileIds = uploadedFiles.map(file => file.id).join(',');
+                const fileNames = uploadedFiles.map(file => file.name).join(',');
+                const webViewLinks = uploadedFiles
+                    .filter(file => file.webViewLink)
+                    .map(file => file.webViewLink)
+                    .join(',');
+                
+                actions.setOutput('file_ids', fileIds);
+                actions.setOutput('file_names', fileNames);
+                if (webViewLinks) {
+                    actions.setOutput('web_view_links', webViewLinks);
+                }
+            }
+            
             console.log('All uploads completed successfully.');
         }
     } catch (error) {

@@ -27,6 +27,10 @@ inputs:
     required: false
     default: false
     type: boolean
+  replace_mode:
+    description: 'Optional, determines how to handle existing files. Options: "delete_first" (same as override=true), "update_in_place" (preserves file ID and sharing links), or "add_new" (default, creates a new file even if one with the same name exists)'
+    required: false
+    default: 'add_new'
 runs:
   using: 'node22'
   main: 'dist/index.js'

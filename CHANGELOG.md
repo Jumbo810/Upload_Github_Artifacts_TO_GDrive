@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2025-05-24
+
+### Added
+- New `replace_mode` parameter with options:
+  - `delete_first`: Delete existing files before uploading (same as override=true)
+  - `update_in_place`: Update existing files in place, preserving file ID and sharing links
+  - `add_new`: Create a new file even if one with the same name exists (default)
+- File outputs for use in subsequent workflow steps:
+  - `file_id` and `file_ids`: ID(s) of uploaded file(s)
+  - `file_name` and `file_names`: Name(s) of uploaded file(s)
+  - `web_view_link` and `web_view_links`: Web view link(s) to access the file(s)
+  - `upload_count`: Number of files uploaded
+- Improved error handling with retry logic for API operations
+- Better logging for debugging issues
+- Support for Windows self-hosted runners
+
+### Fixed
+- Issue with `override` parameter not working on some runners
+- Improved folder creation logic with better error handling
+- Better handling of glob pattern matching
+
+### Changed
+- Updated documentation with examples of using outputs
+- Improved code structure with better separation of concerns
+- Enhanced logging for better debugging
+
 ## [2.2.3] - 2023-05-24
 
 ### Added
@@ -48,4 +74,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for service account authentication
 - Support for optional owner parameter
 - Basic error handling and logging
-
