@@ -52,11 +52,24 @@ Before using this action, you need to set up the Google Drive API:
 4. Create a service account
 5. Create a key for the service account (JSON format)
 6. Base64 encode the JSON key file:
-   ```bash
-   base64 my_service_account_key.json > encoded.txt
+   
+   **Windows (PowerShell):**
+   ```powershell
+   [Convert]::ToBase64String([System.IO.File]::ReadAllBytes("path\to\your-key-file.json"))
    ```
+   
+   **macOS:**
+   ```bash
+   base64 --input ~/Downloads/your-key-file.json
+   ```
+   
+   **Linux:**
+   ```bash
+   base64 path/to/your-key-file.json
+   ```
+
 7. Store the encoded key in a GitHub Secret
-8. Share your Google Drive folder with the service account email
+8. Create a folder in Google Drive where you want to upload artifacts, then share it with the service account email address and set permission to "Editor" so the service account can upload files to this folder
 
 For a visual guide, please refer to our [video tutorial](https://drive.google.com/file/d/1GsKSFmh5IpujFuOaKKsOYKvar-tf5etY/view?usp=sharing).
 
@@ -218,4 +231,3 @@ For security best practices when using this action, please refer to our [Securit
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
