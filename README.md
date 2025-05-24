@@ -96,7 +96,7 @@ You can also specify a glob pattern to upload multiple files at once (this will 
 ### `credentials` (Required):
 A service account public/private key pair encoded in base64.
 
-[Generate and download your credentials in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys)
+[Generate and download your credentials in JSON format](https://console.cloud.google.com/projectcreate)
 
 Run `base64 my_service_account_key.json > encoded.txt` and paste the encoded string into a github secret.
 
