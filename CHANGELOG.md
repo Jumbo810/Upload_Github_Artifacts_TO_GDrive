@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2025-05-24
+
+### Fixed
+- Updated Node.js runtime from `node22` to `node20` for GitHub Actions compatibility
+- GitHub Actions currently supports up to Node.js 20, not Node.js 22
+
 ## [2.3.0] - 2025-05-24
 
 ### Added
