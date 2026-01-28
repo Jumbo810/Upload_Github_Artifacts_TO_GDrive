@@ -34,7 +34,7 @@
     "strip-ansi": "^7.1.0"
   },
   "dependencies": {
-    "@actions/core": "^2.0.1",
+    "@actions/core": "^2.0.3",
     "glob": "^13.0.0",
     "googleapis": "^169.0.0"
   }
