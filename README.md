@@ -32,7 +32,7 @@ steps:
     - uses: actions/checkout@v6
 
     - name: Upload Artifacts TO Google Drive
-      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.4
+      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.5
       with:
         target: <LOCAL_PATH_TO_YOUR_FILE>
         credentials: ${{ secrets.YOUR_SERVICE_ACCOUNT_CREDENTIALS }}
@@ -102,7 +102,7 @@ steps:
     - uses: actions/checkout@v6
 
     - name: Upload Multiple Files TO Google Drive
-      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.4
+      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.5
       with:
         target: "dist/*.zip"
         credentials: ${{ secrets.YOUR_SERVICE_ACCOUNT_CREDENTIALS }}
@@ -115,7 +115,7 @@ steps:
     - uses: actions/checkout@v6
 
     - name: Upload to Nested Folder with Custom Name
-      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.4
+      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.5
       with:
         target: build/app.jar
         name: application-${{ github.sha }}.jar
@@ -130,7 +130,7 @@ steps:
     - uses: actions/checkout@v6
 
     - name: Upload with Override
-      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.4
+      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.5
       with:
         target: build/latest.zip
         credentials: ${{ secrets.YOUR_SERVICE_ACCOUNT_CREDENTIALS }}
@@ -144,7 +144,7 @@ steps:
     - uses: actions/checkout@v6
 
     - name: Upload with Custom Ownership
-      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.4
+      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.5
       with:
         target: build/report.pdf
         credentials: ${{ secrets.YOUR_SERVICE_ACCOUNT_CREDENTIALS }}
@@ -158,7 +158,7 @@ steps:
     - uses: actions/checkout@v6
 
     - name: Upload with Update-in-Place Strategy
-      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.4
+      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.5
       with:
         target: build/latest.zip
         credentials: ${{ secrets.YOUR_SERVICE_ACCOUNT_CREDENTIALS }}
@@ -172,7 +172,7 @@ steps:
     - uses: actions/checkout@v6
 
     - name: Upload and Share
-      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.4
+      uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.5
       with:
         target: build/release.zip
         credentials: ${{ secrets.YOUR_SERVICE_ACCOUNT_CREDENTIALS }}
@@ -232,7 +232,7 @@ The action provides the following outputs that can be used in subsequent steps:
 ```yaml
 - name: Upload to Google Drive
   id: upload
-  uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.4
+  uses: Jumbo810/Upload_Github_Artifacts_TO_GDrive@v2.3.5
   with:
     credentials: ${{ secrets.GOOGLE_CREDENTIALS }}
     parent_folder_id: ${{ secrets.GOOGLE_PARENT_FOLDER_ID }}

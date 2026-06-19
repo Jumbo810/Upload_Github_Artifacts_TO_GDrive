@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.3.5] - 2026-06-19
+### Changed
+- **Runtime**: Upgraded GitHub Action runtime to **Node.js 24 LTS** to avoid deprecation warnings and fully support modern environments (resolves #93).
+
 ## [2.3.4] - 2026-04-13
 ### Added
 - **Formal Outputs**: Formally declared all action outputs in `action.yml` for better workflow integration and autocompletion.
