@@ -36,6 +36,6 @@
   "dependencies": {
     "@actions/core": "^2.0.3",
     "glob": "^13.0.6",
-    "googleapis": "^171.4.0"
+    "googleapis": "^174.0.0"
   }
 }
